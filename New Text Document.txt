@@ -1,0 +1,229 @@
+case statement:
+  
+
+Handling nulls:
+
+
+basic loops:exit
+
+
+cursor:cursor cursor name 
+
+declare open loop close
+
+implicit cursor sql cursor.
+temporary area cursor.
+
+cursors with parameters.
+
+for update-to lock the data.
+wait- for setting the lock time.
+
+
+
+
+
+§Write a pl/sql block which calculates the revised  salary based on the following conditions and updates  the record in EMP table :
+-The new salary for SALESMAN is salary + commission + 20% increment provided they have joined before 15-Sep-81
+-The SALESMAN who have joined after 15-Sep-81 gets only 20% salary revision
+-All other employees get 15% increment. 
+§Display the employee names and their salary for the accepted department number.
+§Display the top N earners  for an accepted department number.
+
+
+declare 
+	v_empname varchar2(20);
+	v_sal number;
+begin
+select first_name,salary into v_empname,v_sal from employees where employee_id=130;
+dbms_output.put_line(v_empname || ' ' || v_sal);
+end;
+/
+
+
+https://fts.capgemini.com/private/32977577682285/advance_explicit_cursor.txt link valid until 2019-03-13 8:00 UTC (SSO protected) 
+
+
+
+
+
+ declare
+       v_sal employees.salary%type;
+    begin
+      select salary into v_sal from employees where employee_id=12456;
+    exception
+      when no_data_found then
+           raise_application_error(-20100,'no such emp',true);
+    end;
+    /
+declare
+*
+ERROR at line 1:
+ORA-20100: no such emp
+ORA-06512: at line 7
+ORA-01403: no data found
+
+
+SQL> declare
+       v_sal employees.salary%type;
+    begin
+      select salary into v_sal from employees where employee_id=12456;
+    exception
+      when no_data_found then
+           raise_application_error(-20100,'no such emp');
+    end;
+    /
+declare
+*
+ERROR at line 1:
+ORA-20100: no such emp
+ORA-06512: at line 7
+
+
+SQL>
+SQL>
+SQL> declare
+       v_sal employees.salary%type;
+    begin
+      select salary into v_sal from employees where employee_id=12456;
+     dbms_output.put_line(SQLCODE || SQLERRM);
+    .
+SQL> begin
+  2  .
+SQL> declare
+  2     v_sal employees.salary%type;
+  3  begin
+  4    select salary into v_sal from employees where employee_id=12456;
+  5  exception
+  6    when no_data_found then
+  7       dbms_output.put_line(SQLCODE || SQLERRM);
+  8  end;
+  9  /
+100ORA-01403: no data found
+
+PL/SQL procedure successfully completed.
+
+SQL> declare
+  2     v_sal employees.salary%type;
+  3  begin
+  4    select salary into v_sal from employees where employee_id=12456;
+  5  exception
+  6    when others then
+  7       dbms_output.put_line(SQLCODE || SQLERRM);
+  8  end;
+  9  /
+100ORA-01403: no data found
+
+PL/SQL procedure successfully completed. 
+
+
+§Job titles need to be revised. Accept the old  and new job title. Update the employees who hold the old job title with the new job title. If the old job title does not exist then raise a user defined exception invalid_job which will display the message ‘No employees with this job title’ 
+
+Trap the error raised for foreign key relationship on emp table,when a master record is deleted from department table
+
+
+ declare
+    e exception;
+    begin
+    delete from employees  salary where employee_id=23000;
+   if sql%found then
+   dbms_output.put_line(sql%rowcount);
+    else
+	raise e
+	when e then
+	dbms_output.put_line('no-data');
+    end if;
+   end;
+   /
+
+
+create or replace procedure p1_sel
+    is
+       v_mgr employees.manager_id%type;
+    begin
+        select manager_id into v_mgr
+    from employees where employee_id=135;
+      dbms_output.put_line(v_mgr);
+    end; 
+
+ create or replace procedure p1_sel(p_id employees.employee_id%type,p_name OUT employees.last_name%type)
+    is
+    begin
+       select last_name into p_name from employees where employee_id=p_id;
+    end;
+    / 
+
+  var g_name varchar2(20)
+
+ exec p1_sel(120,:g_name)
+
+ print g_name
+
+
+
+1.Create a procedure add_dept which receives two parameters department name and location. Insert a record in department table by incrementing the department number by 10
+2.Write a procedure delete_dept which receives the department number and deletes the department if there are no employees in that department 
+§Write a procedure named Insert_Bonus which inserts the bonus amount in the BONUS_AMT column of BONUS table. The procedure should do as follows :  
+§A. Create a cursor which gets the Ename,job, sal, annual salary, hiredate from the EMP table
+§B. Fetch the data. Find out how many years the employee is in service based on the  hiredate
+§C. Calculate  the Bonus to be given on the annual salary  based on the number of years of service and percentage  as given  below
+§D. Insert the record in BONUS table 
+No. of years of service	Percentage
+>= 25	40
+>=24	30
+>=20	20
+< 20	10
+
+
+for in out example 
+take the below one
+CREATE OR REPLACE PROCEDURE format_phone
+  (p_phone_no IN OUT VARCHAR2) IS
+BEGIN
+  p_phone_no := '('  || SUBSTR(p_phone_no,1,3) ||
+                ') ' || SUBSTR(p_phone_no,4,3) ||
+                '-'  || SUBSTR(p_phone_no,7);
+END format_phone; 
+VARIABLE b_phone_no VARCHAR2(15)
+EXECUTE :b_phone_no := '8006330575' 
+PRINT b_phone_no
+EXECUTE format_phone (:b_phone_no)
+PRINT b_phone_no 
+
+
+CREATE FUNCTION check_sal RETURN Boolean IS
+v_dept_id employees.department_id%TYPE;
+ v_empno   employees.employee_id%TYPE;
+ v_sal     employees.salary%TYPE;
+ v_avg_sal employees.salary%TYPE;
+BEGIN
+ v_empno:=205;
+ SELECT salary,department_id INTO v_sal,v_dept_id FROM employees
+ WHERE employee_id= v_empno;
+ SELECT avg(salary) INTO v_avg_sal FROM employees WHERE department_id=v_dept_id;
+ IF v_sal > v_avg_sal THEN
+  RETURN TRUE;
+ ELSE
+  RETURN FALSE;  
+ END IF;
+EXCEPTION
+  WHEN NO_DATA_FOUND THEN
+   RETURN NULL;
+END; 
+BEGIN
+ IF (check_sal IS NULL) THEN
+ DBMS_OUTPUT.PUT_LINE('The function returned
+  NULL due to exception');
+ ELSIF (check_sal) THEN  
+ DBMS_OUTPUT.PUT_LINE('Salary > average');
+ ELSE
+ DBMS_OUTPUT.PUT_LINE('Salary < average');
+ END IF;
+END;
+/ 
+
+
+§Write a function check_dept which accepts the department number and returns  one (1)  if employees exists in that department  and zero (0)  if no employees exists in that department 
+§Write a pl/sql bock which accepts department number. Calls the function check_dept and accordingly displays the message whether the department  have employees or not.
+§Use the function check_dept in SQL command  
+§Modify the procedure delete_dept. The procedure should call the function check_dept and then accordingly delete the department 
